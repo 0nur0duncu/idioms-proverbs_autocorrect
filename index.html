@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Otomatik Kelime Tamamlama</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      margin-bottom: 10px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    li {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+    }
+    li:hover {
+      background-color: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Otomatik Kelime Tamamlama</h1>
+    <input type="text" id="autocomplete" placeholder="Kelime girin...">
+    <ul id="suggestions"></ul>
+  </div>
+
+  <script>
+    const input = document.getElementById('autocomplete');
+    const suggestionsList = document.getElementById('suggestions');
+
+    input.addEventListener('input', function() {
+      const prefix = this.value.trim();
+      
+      if (prefix === '') {
+        suggestionsList.innerHTML = '';
+        return;
+      }
+
+      fetch(`http://localhost:8080/autocomplete?prefix=${encodeURIComponent(prefix)}`)
+        .then(response => response.json())
+        .then(data => {
+          suggestionsList.innerHTML = '';
+          if (data.suggestions && data.suggestions.length > 0) {
+            data.suggestions.forEach(suggestion => {
+              const li = document.createElement('li');
+              li.textContent = suggestion;
+              li.addEventListener('click', () => {
+                input.value = suggestion;
+                suggestionsList.innerHTML = '';
+              });
+              suggestionsList.appendChild(li);
+            });
+          } else {
+            const li = document.createElement('li');
+            li.textContent = 'Öneri bulunamadı';
+            suggestionsList.appendChild(li);
+          }
+        })
+        .catch(error => {
+          console.error('Hata:', error);
+          suggestionsList.innerHTML = '<li style="color: red;">Hata oluştu</li>';
+        });
+    });
+  </script>
+</body>
+</html>
